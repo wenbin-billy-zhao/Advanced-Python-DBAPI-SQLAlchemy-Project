@@ -43,10 +43,21 @@ app = Flask(__name__)
 def index():
        return """
               <html>
-                     <head>Welcome to Advanced SQLAlchemy Magic Land!</head>
+                     <head>Welcome to Advanced SQLAlchemy Magic Land!
+                     <style>
+                            .rainbow-text {
+                            font-family: Sans-serif;
+                            background-image: linear-gradient(to left, violet, indigo, blue, green, orange, red);   -webkit-background-clip: text;
+                            color: transparent;
+                            }
+                            h4 {font-family: Sans-serif;}
+                            ul {font-size: 1.2em;}
+                     
+                     </style>
+                     </head>
                      <body>
-                            <h2>Surf Up! - Analysis of Hawaii Weather Data</h2>
-                            <h4>In this analysis, we list several weather data set collected from Hawaii wether stations</h4>
+                            <h1 class="rainbow-text">Surf Up! - Analysis of Hawaii Weather Data</h1>
+                            <h4>In this analysis, we list several weather data set collected from Hawaii wether stations In this analysis</h4>
 
                             <ul>
                                    <li>Date and Precipitation Result (12 Months): <br>
@@ -65,7 +76,11 @@ def index():
                                    <a href="/api/v1.0/2016-01-01">/api/v1.0/2016-01-01</a>
                                    <br><br>
 
-                                   <li>Minimum, Maximum, Average Tempreture by Date Range:<br>
+                                   <li>Minimum, Maximum, Average Tempreture by Date Range (summary):<br>
+                                   <a href="/api/v1.0/2016-03-05/2016-03-20/summary">/api/v1.0/2016-03-05/2016-03-20/summary</a>
+                                   <br><br>
+
+                                   <li>Minimum, Maximum, Average Tempreture by Date Range (by daily):<br>
                                    <a href="/api/v1.0/2016-03-05/2016-03-20">/api/v1.0/2016-03-05/2016-03-20</a>
                                    <br><br>
 
@@ -116,9 +131,24 @@ def start(start):
        start_list = list(start_query_result)
        return jsonify(start_list)
 
-@app.route("/api/v1.0/<start_date>/<end_date>")
-def my_trip(start_date, end_date):
+@app.route("/api/v1.0/<start_date>/<end_date>/summary")
+def my_trip_sum(start_date, end_date):
+       """
+       
+       """
        session = Session(engine)
+       
+       trip_query_result = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).all()
+       trip_list = list(trip_query_result)
+       return jsonify(trip_list)
+
+@app.route("/api/v1.0/<start_date>/<end_date>")
+def my_trip_daily(start_date, end_date):
+       """
+       
+       """
+       session = Session(engine)
+       
        trip_query_result = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).group_by(Measurement.date).all()
        trip_list = list(trip_query_result)
        return jsonify(trip_list)
